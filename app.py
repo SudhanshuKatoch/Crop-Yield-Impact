@@ -8,9 +8,18 @@ import pickle
 import matplotlib.pyplot as plt
 
 # Function to load the dataset
-def load_data(file_path='C:/Organic Farm Yield/data.csv/pesticides.csv'):
-    df = pd.read_csv(file_path)
-    return df
+def load_data(file_path=r'C:/Crop Yield Impact/data.csv/pesticides.csv'):
+    try:
+        df = pd.read_csv(file_path)
+        return df
+    except FileNotFoundError:
+        st.error(f"Error: The file at {file_path} was not found.")
+    except pd.errors.EmptyDataError:
+        st.error(f"Error: The file at {file_path} is empty.")
+    except pd.errors.ParserError:
+        st.error(f"Error: There was a parsing error while reading the file at {file_path}.")
+    except Exception as e:
+        st.error(f"An unexpected error occurred: {e}")
 
 # Function to train the model
 def train_model(df):
@@ -49,43 +58,46 @@ def predict(pesticides_use):
 
 # Load and train the model
 df = load_data()
-model, mse, r2 = train_model(df)
+if df is not None:
+    model, mse, r2 = train_model(df)
 
-# Streamlit app
-st.title("🌱 Crop Yield Impact")
+    # Streamlit app
+    st.title("🌱 Crop Yield Impact Predictor")
 
-# Create input field for pesticide quantity
-pesticide_quantity = st.number_input("Enter the amount of pesticides used (tonnes)", min_value=0.0, step=0.1, format="%.1f")
+    # Create input field for pesticide quantity
+    pesticide_quantity = st.number_input("Enter the amount of pesticides used (tonnes)", min_value=0.0, step=0.1, format="%.1f")
 
-# Display prediction result
-if st.button("Predict Yield"):
-    predicted_yield = predict(pesticide_quantity)
-    st.success(f"Predicted Yield for {pesticide_quantity:.1f} tonnes of pesticides: {predicted_yield:.2f} units")
-    st.balloons()
+    # Display prediction result
+    if st.button("Predict Yield"):
+        predicted_yield = predict(pesticide_quantity)
+        st.success(f"Predicted Yield for {pesticide_quantity:.1f} tonnes of pesticides: {predicted_yield:.2f} units")
+        st.balloons()
 
-# Visualize the model
-st.markdown("### Regression Model Visualization")
-visualize_model(df, model)
+    # Visualize the model
+    st.markdown("### Regression Model Visualization")
+    visualize_model(df, model)
 
-# Display model performance metrics
-st.markdown("### Model Performance")
-st.write(f"**Mean Squared Error**: {mse:.2f}")
-st.write(f"**R² Score**: {r2:.2f}")
+    # Display model performance metrics
+    st.markdown("### Model Performance")
+    st.write(f"**Mean Squared Error**: {mse:.2f}")
+    st.write(f"**R² Score**: {r2:.2f}")
 
-# Add some additional styling
-st.markdown(
-    """
-    <style>
-    .stButton>button {
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 20px;
-        font-size: 16px;
-    }
-    .stButton>button:hover {
-        background-color: #45a049;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+    # Add some additional styling
+    st.markdown(
+        """
+        <style>
+        .stButton>button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+        .stButton>button:hover {
+            background-color: #45a049;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+else:
+    st.error("Failed to load data. Please check the file path and try again.")
